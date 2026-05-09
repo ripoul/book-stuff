@@ -8,6 +8,8 @@ const createPlaceMock = vi.hoisted(() => vi.fn())
 vi.mock('../api/places.ts', () => ({
   listPlaces: vi.fn(),
   createPlace: createPlaceMock,
+  updatePlace: vi.fn(),
+  getPlace: vi.fn(),
 }))
 
 vi.mock('../context/useAuth.ts', () => ({
@@ -42,10 +44,10 @@ describe('AddPlaceDialog', () => {
     fireEvent.click(within(dialog).getByRole('switch'))
     fireEvent.click(within(dialog).getByRole('button', { name: /^save$/i }))
     await waitFor(() => {
-      expect(createPlaceMock).toHaveBeenCalledWith(
-        { name: 'Room A', public: true },
-        'test-access',
-      )
+      expect(createPlaceMock).toHaveBeenCalledWith({
+        name: 'Room A',
+        public: true,
+      })
     })
     expect(onCreated).toHaveBeenCalled()
     expect(onClose).toHaveBeenCalled()

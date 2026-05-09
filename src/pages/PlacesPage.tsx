@@ -28,6 +28,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/errors.ts'
 import { listPlaces } from '../api/places.ts'
 import { AddPlaceDialog } from '../components/AddPlaceDialog.tsx'
@@ -56,6 +57,7 @@ function formatDate(iso: string): string {
 }
 
 export function PlacesPage() {
+  const navigate = useNavigate()
   const { accessToken } = useAuth()
   const [nameInput, setNameInput] = useState('')
   const [nameFilter, setNameFilter] = useState('')
@@ -78,19 +80,17 @@ export function PlacesPage() {
   }, [nameInput])
 
   const load = useCallback(async () => {
+    void accessToken
     setLoading(true)
     setError(null)
     try {
-      const res = await listPlaces(
-        {
-          limit: rowsPerPage,
-          offset: page * rowsPerPage,
-          name: nameFilter || undefined,
-          ordering,
-          managed_by_me: managedByMe ? true : undefined,
-        },
-        accessToken,
-      )
+      const res = await listPlaces({
+        limit: rowsPerPage,
+        offset: page * rowsPerPage,
+        name: nameFilter || undefined,
+        ordering,
+        managed_by_me: managedByMe ? true : undefined,
+      })
       setData(res)
     } catch (e) {
       setData(null)
@@ -211,7 +211,12 @@ export function PlacesPage() {
                 </TableRow>
               ) : (
                 (data?.results ?? []).map((row) => (
-                  <TableRow key={row.id} hover>
+                  <TableRow
+                    key={row.id}
+                    hover
+                    sx={{ cursor: 'pointer' }}
+                    onClick={() => navigate(`/places/${row.id}`)}
+                  >
                     <TableCell>{row.name}</TableCell>
                     <TableCell>
                       <Chip
@@ -229,7 +234,10 @@ export function PlacesPage() {
                         <IconButton
                           size="small"
                           aria-label={`Edit ${row.name}`}
-                          onClick={() => setEditing(row)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditing(row)
+                          }}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>

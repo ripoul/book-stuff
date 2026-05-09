@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { configureAuthFetch } from './authFetch.ts'
 import { ApiError } from './errors.ts'
-import { createPlace, listPlaces, updatePlace } from './places.ts'
+import { createPlace, getPlace, listPlaces, updatePlace } from './places.ts'
 
 function jsonResponse(data: unknown, ok = true, status = 200): Response {
   return {
@@ -11,12 +12,23 @@ function jsonResponse(data: unknown, ok = true, status = 200): Response {
   } as Response
 }
 
+let tokenForTests: string | null = 'tok'
+
 describe('places API', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
+    tokenForTests = 'tok'
+    configureAuthFetch({
+      getAccessToken: () => tokenForTests,
+      refresh: async () => {
+        tokenForTests = 'refreshed'
+        return 'refreshed'
+      },
+    })
   })
 
   afterEach(() => {
+    configureAuthFetch(null)
     vi.unstubAllGlobals()
   })
 
@@ -36,10 +48,12 @@ describe('places API', () => {
       ],
     }
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(payload))
-    const res = await listPlaces(
-      { limit: 10, offset: 0, name: 'La', ordering: 'name' },
-      'tok',
-    )
+    const res = await listPlaces({
+      limit: 10,
+      offset: 0,
+      name: 'La',
+      ordering: 'name',
+    })
     expect(res.count).toBe(1)
     expect(res.results[0].name).toBe('Lab')
     const [url, init] = vi.mocked(fetch).mock.calls[0]
@@ -47,12 +61,28 @@ describe('places API', () => {
     expect(String(url)).toContain('limit=10')
     expect(String(url)).toContain('name=La')
     expect(String(url)).toContain('ordering=name')
-    expect(init?.headers).toMatchObject({
-      Authorization: 'Bearer tok',
-    })
+    expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer tok')
+  })
+
+  it('getPlace requests detail URL', async () => {
+    const place = {
+      id: 4,
+      name: 'Solo',
+      public: false,
+      can_manage: false,
+      created_at: '2020-01-01T00:00:00Z',
+      updated_at: '2020-01-01T00:00:00Z',
+    }
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(place))
+    const res = await getPlace(4)
+    expect(res.name).toBe('Solo')
+    const [url, init] = vi.mocked(fetch).mock.calls[0]
+    expect(String(url)).toContain('booking/places/4/')
+    expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer tok')
   })
 
   it('listPlaces adds managed_by_me when true', async () => {
+    tokenForTests = null
     vi.mocked(fetch).mockResolvedValueOnce(
       jsonResponse({
         count: 0,
@@ -61,12 +91,14 @@ describe('places API', () => {
         results: [],
       }),
     )
-    await listPlaces({ limit: 5, offset: 0, managed_by_me: true }, null)
-    const [url] = vi.mocked(fetch).mock.calls[0]
+    await listPlaces({ limit: 5, offset: 0, managed_by_me: true })
+    const [url, init] = vi.mocked(fetch).mock.calls[0]
     expect(String(url)).toContain('managed_by_me=true')
+    expect(new Headers(init?.headers).get('Authorization')).toBeNull()
   })
 
   it('updatePlace sends PATCH', async () => {
+    tokenForTests = 'access-token'
     const updated = {
       id: 3,
       name: 'Renamed',
@@ -76,11 +108,7 @@ describe('places API', () => {
       updated_at: '2020-01-03T00:00:00Z',
     }
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(updated))
-    const place = await updatePlace(
-      3,
-      { name: 'Renamed', public: true },
-      'access-token',
-    )
+    const place = await updatePlace(3, { name: 'Renamed', public: true })
     expect(place.name).toBe('Renamed')
     const [url, init] = vi.mocked(fetch).mock.calls[0]
     expect(String(url)).toContain('booking/places/3/')
@@ -92,13 +120,13 @@ describe('places API', () => {
   })
 
   it('listPlaces throws ApiError when not ok', async () => {
+    tokenForTests = null
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({}, false, 500))
-    await expect(listPlaces({ limit: 10, offset: 0 }, null)).rejects.toThrow(
-      ApiError,
-    )
+    await expect(listPlaces({ limit: 10, offset: 0 })).rejects.toThrow(ApiError)
   })
 
   it('createPlace sends JSON body', async () => {
+    tokenForTests = 'access-token'
     const created = {
       id: 2,
       name: 'New',
@@ -107,10 +135,7 @@ describe('places API', () => {
       updated_at: '2020-01-02T00:00:00Z',
     }
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(created))
-    const place = await createPlace(
-      { name: 'New', public: false },
-      'access-token',
-    )
+    const place = await createPlace({ name: 'New', public: false })
     expect(place.id).toBe(2)
     const [, init] = vi.mocked(fetch).mock.calls[0]
     expect(init?.method).toBe('POST')

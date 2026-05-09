@@ -11,7 +11,6 @@ import {
   TextField,
 } from '@mui/material'
 import { useState } from 'react'
-import { ApiError } from '../api/errors.ts'
 import { createPlace } from '../api/places.ts'
 import { useAuth } from '../context/useAuth.ts'
 
@@ -22,7 +21,7 @@ type Props = {
 }
 
 export function AddPlaceDialog({ open, onClose, onCreated }: Props) {
-  const { accessToken, refreshSession } = useAuth()
+  const { accessToken } = useAuth()
   const [name, setName] = useState('')
   const [publicPlace, setPublicPlace] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,45 +40,23 @@ export function AddPlaceDialog({ open, onClose, onCreated }: Props) {
     }
   }
 
-  const submit = async (token: string) => {
-    await createPlace({ name: name.trim(), public: publicPlace }, token)
-  }
-
   const handleSubmit = async () => {
     setError(null)
     if (!name.trim()) {
       setError('Name is required.')
       return
     }
-    const token = accessToken
-    if (!token) {
+    if (!accessToken) {
       setError('You must be signed in to add a place.')
       return
     }
     setLoading(true)
     try {
-      await submit(token)
+      await createPlace({ name: name.trim(), public: publicPlace })
       onCreated()
       reset()
       onClose()
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        const next = await refreshSession()
-        if (next) {
-          try {
-            await submit(next)
-            onCreated()
-            reset()
-            onClose()
-            return
-          } catch (e2) {
-            setError(e2 instanceof Error ? e2.message : 'Could not save place.')
-            return
-          }
-        }
-        setError('Session expired. Please sign in again.')
-        return
-      }
       setError(err instanceof Error ? err.message : 'Could not save place.')
     } finally {
       setLoading(false)

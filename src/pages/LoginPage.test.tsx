@@ -11,6 +11,13 @@ describe('LoginPage', () => {
     expect(screen.getByText(/account created/i)).toBeInTheDocument()
   })
 
+  it('shows session expired when session query is set', () => {
+    renderWithProviders(<LoginPage />, {
+      initialEntries: ['/login?session=expired'],
+    })
+    expect(screen.getByText(/votre session a expiré/i)).toBeInTheDocument()
+  })
+
   it('stores tokens after successful submit', async () => {
     vi.stubGlobal(
       'fetch',

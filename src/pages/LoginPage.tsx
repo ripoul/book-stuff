@@ -22,6 +22,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const justRegistered = searchParams.get('registered') === '1'
+  const sessionExpired = searchParams.get('session') === 'expired'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -55,6 +56,11 @@ export function LoginPage() {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Use the same email and password as your account.
         </Typography>
+        {sessionExpired && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            Votre session a expiré. Veuillez vous reconnecter.
+          </Alert>
+        )}
         {justRegistered && (
           <Alert severity="success" sx={{ mb: 2 }}>
             Account created. You can sign in now.

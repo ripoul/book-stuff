@@ -5,29 +5,34 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControlLabel,
   Stack,
-  Switch,
   TextField,
 } from '@mui/material'
 import { useState } from 'react'
-import { updatePlace } from '../api/places.ts'
+import { createResource, updateResource } from '../api/resources.ts'
 import { useAuth } from '../context/useAuth.ts'
-import type { Place } from '../types/booking.ts'
+import type { Resource } from '../types/booking.ts'
 
 type Props = {
-  place: Place | null
+  open: boolean
+  placeId: number
+  resource: Resource | null
   onClose: () => void
   onSaved: () => void
 }
 
-export function EditPlaceDialog({ place, onClose, onSaved }: Props) {
-  const open = place !== null
+export function ResourceFormDialog({
+  open,
+  placeId,
+  resource,
+  onClose,
+  onSaved,
+}: Props) {
   const { accessToken } = useAuth()
-  const [name, setName] = useState(() => place?.name ?? '')
-  const [publicPlace, setPublicPlace] = useState(() => place?.public ?? false)
+  const [name, setName] = useState(() => resource?.name ?? '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const isEdit = resource !== null
 
   const handleClose = () => {
     if (!loading) onClose()
@@ -35,25 +40,25 @@ export function EditPlaceDialog({ place, onClose, onSaved }: Props) {
 
   const handleSubmit = async () => {
     setError(null)
-    if (!place) return
     if (!name.trim()) {
       setError('Name is required.')
       return
     }
     if (!accessToken) {
-      setError('You must be signed in to edit a place.')
+      setError('You must be signed in.')
       return
     }
     setLoading(true)
     try {
-      await updatePlace(place.id, {
-        name: name.trim(),
-        public: publicPlace,
-      })
+      if (isEdit && resource) {
+        await updateResource(resource.id, { name: name.trim() })
+      } else {
+        await createResource({ place: placeId, name: name.trim() })
+      }
       onSaved()
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save place.')
+      setError(err instanceof Error ? err.message : 'Could not save.')
     } finally {
       setLoading(false)
     }
@@ -61,7 +66,7 @@ export function EditPlaceDialog({ place, onClose, onSaved }: Props) {
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-      <DialogTitle>Edit place</DialogTitle>
+      <DialogTitle>{isEdit ? 'Edit resource' : 'Add resource'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           {error && <Alert severity="error">{error}</Alert>}
@@ -72,15 +77,6 @@ export function EditPlaceDialog({ place, onClose, onSaved }: Props) {
             required
             fullWidth
             autoFocus
-          />
-          <FormControlLabel
-            control={
-              <Switch
-                checked={publicPlace}
-                onChange={(e) => setPublicPlace(e.target.checked)}
-              />
-            }
-            label="Public (visible without sign-in)"
           />
         </Stack>
       </DialogContent>

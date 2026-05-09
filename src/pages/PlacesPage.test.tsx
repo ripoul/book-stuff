@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { Route, Routes } from 'react-router-dom'
 import { listPlaces } from '../api/places.ts'
 import { renderWithProviders } from '../test-utils.tsx'
 import { PlacesPage } from './PlacesPage.tsx'
@@ -8,6 +9,7 @@ vi.mock('../api/places.ts', () => ({
   listPlaces: vi.fn(),
   createPlace: vi.fn(),
   updatePlace: vi.fn(),
+  getPlace: vi.fn(),
 }))
 
 const listPlacesMock = vi.mocked(listPlaces)
@@ -55,7 +57,6 @@ describe('PlacesPage', () => {
         offset: 0,
         ordering: '-created_at',
       }),
-      null,
     )
   })
 
@@ -73,7 +74,6 @@ describe('PlacesPage', () => {
     await waitFor(() =>
       expect(listPlacesMock).toHaveBeenCalledWith(
         expect.objectContaining({ managed_by_me: true }),
-        null,
       ),
     )
   })
@@ -93,5 +93,22 @@ describe('PlacesPage', () => {
     expect(
       screen.queryByRole('button', { name: /edit beta/i }),
     ).not.toBeInTheDocument()
+  })
+
+  it('navigates to place detail when row is clicked', async () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/places" element={<PlacesPage />} />
+        <Route path="/places/:placeId" element={<div>place-detail</div>} />
+      </Routes>,
+      { initialEntries: ['/places'] },
+    )
+    await waitFor(() => expect(listPlacesMock).toHaveBeenCalled())
+    const row = screen.getByText('Alpha').closest('tr')
+    expect(row).toBeTruthy()
+    fireEvent.click(row as HTMLElement)
+    await waitFor(() =>
+      expect(screen.getByText('place-detail')).toBeInTheDocument(),
+    )
   })
 })

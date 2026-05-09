@@ -1,50 +1,39 @@
-import type { Paginated, Place } from '../types/booking.ts'
+import type { Paginated, Resource } from '../types/booking.ts'
 import { authFetch } from './authFetch.ts'
 import { ApiError } from './errors.ts'
 import { buildUrl } from './http.ts'
 
-export type ListPlacesParams = {
+export type ListResourcesParams = {
   limit: number
   offset: number
-  name?: string
-  ordering?: string
-  managed_by_me?: boolean
+  place: number
 }
 
-export async function getPlace(id: number): Promise<Place> {
-  const url = buildUrl(`/booking/places/${id}/`)
-  const res = await authFetch(url, { headers: { Accept: 'application/json' } })
-  if (!res.ok) {
-    throw new ApiError(res.status, `Request failed (${res.status})`)
-  }
-  return res.json() as Promise<Place>
-}
-
-export async function listPlaces(
-  params: ListPlacesParams,
-): Promise<Paginated<Place>> {
+export async function listResources(
+  params: ListResourcesParams,
+): Promise<Paginated<Resource>> {
   const query: Record<string, string | number | undefined> = {
     limit: params.limit,
     offset: params.offset,
+    place: params.place,
   }
-  if (params.name?.trim()) query.name = params.name.trim()
-  if (params.ordering) query.ordering = params.ordering
-  if (params.managed_by_me === true) query.managed_by_me = 'true'
-  const url = buildUrl('/booking/places/', query)
+  const url = buildUrl('/booking/resources/', query)
   const res = await authFetch(url, { headers: { Accept: 'application/json' } })
   if (!res.ok) {
     throw new ApiError(res.status, `Request failed (${res.status})`)
   }
-  return res.json() as Promise<Paginated<Place>>
+  return res.json() as Promise<Paginated<Resource>>
 }
 
-export type CreatePlaceBody = {
+export type CreateResourceBody = {
+  place: number
   name: string
-  public: boolean
 }
 
-export async function createPlace(body: CreatePlaceBody): Promise<Place> {
-  const url = buildUrl('/booking/places/')
+export async function createResource(
+  body: CreateResourceBody,
+): Promise<Resource> {
+  const url = buildUrl('/booking/resources/')
   const res = await authFetch(url, {
     method: 'POST',
     headers: {
@@ -69,16 +58,18 @@ export async function createPlace(body: CreatePlaceBody): Promise<Place> {
     }
     throw new ApiError(res.status, `Request failed (${res.status})`)
   }
-  return res.json() as Promise<Place>
+  return res.json() as Promise<Resource>
 }
 
-export type UpdatePlaceBody = CreatePlaceBody
+export type UpdateResourceBody = {
+  name: string
+}
 
-export async function updatePlace(
+export async function updateResource(
   id: number,
-  body: UpdatePlaceBody,
-): Promise<Place> {
-  const url = buildUrl(`/booking/places/${id}/`)
+  body: UpdateResourceBody,
+): Promise<Resource> {
+  const url = buildUrl(`/booking/resources/${id}/`)
   const res = await authFetch(url, {
     method: 'PATCH',
     headers: {
@@ -103,5 +94,5 @@ export async function updatePlace(
     }
     throw new ApiError(res.status, `Request failed (${res.status})`)
   }
-  return res.json() as Promise<Place>
+  return res.json() as Promise<Resource>
 }

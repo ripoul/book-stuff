@@ -15,10 +15,37 @@ const listPlacesMock = vi.hoisted(() =>
   }),
 )
 
+const getPlaceMock = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({
+    id: 1,
+    name: 'Sample',
+    public: true,
+    can_manage: true,
+    created_at: '2020-01-01T00:00:00Z',
+    updated_at: '2020-01-01T00:00:00Z',
+  }),
+)
+
+const listResourcesMock = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({
+    count: 0,
+    next: null,
+    previous: null,
+    results: [],
+  }),
+)
+
 vi.mock('./api/places.ts', () => ({
   listPlaces: listPlacesMock,
+  getPlace: getPlaceMock,
   createPlace: vi.fn(),
   updatePlace: vi.fn(),
+}))
+
+vi.mock('./api/resources.ts', () => ({
+  listResources: listResourcesMock,
+  createResource: vi.fn(),
+  updateResource: vi.fn(),
 }))
 
 function renderAt(path: string) {
@@ -48,6 +75,15 @@ describe('App', () => {
       await screen.findByRole('heading', { name: /^places$/i }),
     ).toBeInTheDocument()
     expect(listPlacesMock).toHaveBeenCalled()
+  })
+
+  it('place detail route loads place', async () => {
+    renderAt('/places/1')
+    expect(
+      await screen.findByRole('heading', { name: 'Sample' }),
+    ).toBeInTheDocument()
+    expect(getPlaceMock).toHaveBeenCalled()
+    expect(listResourcesMock).toHaveBeenCalled()
   })
 
   it('login route shows form', async () => {
