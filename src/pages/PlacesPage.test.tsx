@@ -1,0 +1,97 @@
+import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { listPlaces } from '../api/places.ts'
+import { renderWithProviders } from '../test-utils.tsx'
+import { PlacesPage } from './PlacesPage.tsx'
+
+vi.mock('../api/places.ts', () => ({
+  listPlaces: vi.fn(),
+  createPlace: vi.fn(),
+  updatePlace: vi.fn(),
+}))
+
+const listPlacesMock = vi.mocked(listPlaces)
+
+describe('PlacesPage', () => {
+  beforeEach(() => {
+    listPlacesMock.mockResolvedValue({
+      count: 2,
+      next: null,
+      previous: null,
+      results: [
+        {
+          id: 1,
+          name: 'Alpha',
+          public: true,
+          can_manage: true,
+          created_at: '2020-01-01T00:00:00Z',
+          updated_at: '2020-01-01T00:00:00Z',
+        },
+        {
+          id: 2,
+          name: 'Beta',
+          public: false,
+          can_manage: false,
+          created_at: '2020-01-02T00:00:00Z',
+          updated_at: '2020-01-02T00:00:00Z',
+        },
+      ],
+    })
+  })
+
+  it('loads and displays places', async () => {
+    renderWithProviders(<PlacesPage />)
+    await waitFor(() => expect(listPlacesMock).toHaveBeenCalled())
+    expect(await screen.findByText('Alpha')).toBeInTheDocument()
+    expect(screen.getByText('Beta')).toBeInTheDocument()
+  })
+
+  it('requests pagination params', async () => {
+    renderWithProviders(<PlacesPage />)
+    await waitFor(() => expect(listPlacesMock).toHaveBeenCalled())
+    expect(listPlacesMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        limit: 10,
+        offset: 0,
+        ordering: '-created_at',
+      }),
+      null,
+    )
+  })
+
+  it('disables add when not authenticated', () => {
+    renderWithProviders(<PlacesPage />)
+    const addButtons = screen.getAllByRole('button', { name: /add place/i })
+    expect(addButtons[0]).toBeDisabled()
+  })
+
+  it('sends managed_by_me when filter is on', async () => {
+    renderWithProviders(<PlacesPage />)
+    await waitFor(() => expect(listPlacesMock).toHaveBeenCalled())
+    listPlacesMock.mockClear()
+    fireEvent.click(screen.getByRole('switch', { name: /managed by me/i }))
+    await waitFor(() =>
+      expect(listPlacesMock).toHaveBeenCalledWith(
+        expect.objectContaining({ managed_by_me: true }),
+        null,
+      ),
+    )
+  })
+
+  it('opens edit dialog when can_manage', async () => {
+    renderWithProviders(<PlacesPage />)
+    await waitFor(() => expect(listPlacesMock).toHaveBeenCalled())
+    fireEvent.click(screen.getByRole('button', { name: /edit alpha/i }))
+    expect(
+      await screen.findByRole('dialog', { name: /edit place/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('does not show edit for rows without can_manage', async () => {
+    renderWithProviders(<PlacesPage />)
+    await waitFor(() => expect(screen.getByText('Beta')).toBeInTheDocument())
+    expect(
+      screen.queryByRole('button', { name: /edit beta/i }),
+    ).not.toBeInTheDocument()
+  })
+})
