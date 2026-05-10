@@ -58,7 +58,7 @@ function formatDate(iso: string): string {
 
 export function PlacesPage() {
   const navigate = useNavigate()
-  const { accessToken } = useAuth()
+  const { accessToken, isAuthenticated } = useAuth()
   const [nameInput, setNameInput] = useState('')
   const [nameFilter, setNameFilter] = useState('')
   const [ordering, setOrdering] = useState('-created_at')
@@ -70,6 +70,10 @@ export function PlacesPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [managedByMe, setManagedByMe] = useState(false)
   const [editing, setEditing] = useState<Place | null>(null)
+
+  useEffect(() => {
+    if (!isAuthenticated) setManagedByMe(false)
+  }, [isAuthenticated])
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -89,7 +93,7 @@ export function PlacesPage() {
         offset: page * rowsPerPage,
         name: nameFilter || undefined,
         ordering,
-        managed_by_me: managedByMe ? true : undefined,
+        managed_by_me: isAuthenticated && managedByMe ? true : undefined,
       })
       setData(res)
     } catch (e) {
@@ -98,7 +102,15 @@ export function PlacesPage() {
     } finally {
       setLoading(false)
     }
-  }, [accessToken, page, rowsPerPage, nameFilter, ordering, managedByMe])
+  }, [
+    accessToken,
+    isAuthenticated,
+    page,
+    rowsPerPage,
+    nameFilter,
+    ordering,
+    managedByMe,
+  ])
 
   useEffect(() => {
     void load()
@@ -120,8 +132,9 @@ export function PlacesPage() {
         Places
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Filter by name, show only places you manage, change sort order, and
-        browse pages. Totals follow API pagination.
+        {isAuthenticated
+          ? 'Filter by name, show only places you manage, change sort order, and browse pages. Totals follow API pagination.'
+          : 'Filter by name, change sort order, and browse pages. Totals follow API pagination.'}
       </Typography>
 
       <Paper sx={{ mb: 2 }}>
@@ -148,18 +161,20 @@ export function PlacesPage() {
               ))}
             </Select>
           </FormControl>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={managedByMe}
-                onChange={(e) => {
-                  setManagedByMe(e.target.checked)
-                  setPage(0)
-                }}
-              />
-            }
-            label="Managed by me"
-          />
+          {isAuthenticated ? (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={managedByMe}
+                  onChange={(e) => {
+                    setManagedByMe(e.target.checked)
+                    setPage(0)
+                  }}
+                />
+              }
+              label="Managed by me"
+            />
+          ) : null}
           <Box sx={{ flexGrow: 1 }} />
           <Button
             variant="contained"

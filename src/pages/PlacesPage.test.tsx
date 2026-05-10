@@ -69,7 +69,16 @@ describe('PlacesPage', () => {
     expect(addButtons[0]).toBeDisabled()
   })
 
+  it('hides managed by me switch when not authenticated', () => {
+    renderWithProviders(<PlacesPage />)
+    expect(
+      screen.queryByRole('switch', { name: /managed by me/i }),
+    ).not.toBeInTheDocument()
+  })
+
   it('sends managed_by_me when filter is on', async () => {
+    localStorage.setItem('bookstuff_access', 'acc')
+    localStorage.setItem('bookstuff_refresh', 'ref')
     renderWithProviders(<PlacesPage />)
     await waitFor(() => expect(listPlacesMock).toHaveBeenCalled())
     listPlacesMock.mockClear()
