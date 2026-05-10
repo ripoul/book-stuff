@@ -34,9 +34,33 @@ function ensureLocalStorage(): void {
   })
 }
 
+function mediaQueryMatch(query: string, width: number): boolean {
+  const mins = [...query.matchAll(/min-width:\s*(\d+(?:\.\d+)?)px/gi)]
+  if (mins.length) return mins.every((m) => width >= Number(m[1]))
+  const maxs = [...query.matchAll(/max-width:\s*(\d+(?:\.\d+)?)px/gi)]
+  if (maxs.length) return maxs.every((m) => width <= Number(m[1]))
+  return false
+}
+
 beforeEach(() => {
   ensureLocalStorage()
   globalThis.localStorage.clear()
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    configurable: true,
+    value: (query: string) => ({
+      get matches() {
+        return mediaQueryMatch(query, window.innerWidth)
+      },
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })
 })
 
 afterEach(() => {

@@ -9,6 +9,10 @@ export function configureAuthFetch(h: AuthFetchHandlers | null) {
   handlers = h
 }
 
+export function peekAccessToken(): string | null {
+  return handlers?.getAccessToken() ?? null
+}
+
 async function requestWithToken(
   input: string,
   init: RequestInit,

@@ -17,7 +17,7 @@ describe('AppLayout', () => {
       'href',
       '/',
     )
-    const logo = screen.getByRole('link', { name: /home/i })
+    const logo = screen.getByRole('link', { name: /home page logo/i })
     expect(logo).toHaveAttribute('href', '/')
     expect(logo.querySelector('img')).toHaveAttribute('src', '/favicon.svg')
     expect(screen.getByRole('contentinfo')).toBeInTheDocument()
@@ -27,7 +27,7 @@ describe('AppLayout', () => {
     )
   })
 
-  it('opens drawer from menu button', () => {
+  it('shows navigation in the app bar on wide viewport', () => {
     renderWithProviders(
       <Routes>
         <Route element={<AppLayout />}>
@@ -35,8 +35,40 @@ describe('AppLayout', () => {
         </Route>
       </Routes>,
     )
-    fireEvent.click(screen.getAllByRole('button', { name: /open menu/i })[0])
-    expect(screen.getByText('Menu')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /^home$/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('navigation', { name: /main/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /^home$/i })).toHaveAttribute(
+      'href',
+      '/',
+    )
+  })
+
+  it('opens navigation drawer from burger on narrow viewport', () => {
+    const w = window.innerWidth
+    Object.defineProperty(window, 'innerWidth', {
+      value: 600,
+      configurable: true,
+    })
+    try {
+      renderWithProviders(
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route index element={<span>x</span>} />
+          </Route>
+        </Routes>,
+      )
+      expect(screen.queryByRole('navigation', { name: /main/i })).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: /open menu/i }))
+      expect(screen.getByRole('link', { name: /^home$/i })).toHaveAttribute(
+        'href',
+        '/',
+      )
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        value: w,
+        configurable: true,
+      })
+    }
   })
 })

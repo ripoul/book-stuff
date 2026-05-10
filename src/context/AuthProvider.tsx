@@ -8,12 +8,14 @@ import {
 } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginWithPassword, refreshAccessToken } from '../api/auth.ts'
+import { jwtAccountEmail } from '../api/jwt.ts'
 import { configureAuthFetch } from '../api/authFetch.ts'
 import { jwtExpUnixSeconds } from '../api/jwt.ts'
 import { AuthContext } from './auth-context.ts'
 
 const STORAGE_ACCESS = 'bookstuff_access'
 const STORAGE_REFRESH = 'bookstuff_refresh'
+const STORAGE_ACCOUNT_EMAIL = 'bookstuff_account_email'
 
 function readStored(key: string): string | null {
   try {
@@ -32,6 +34,17 @@ function writeStored(key: string, value: string | null) {
   }
 }
 
+function initialAccountEmail(): string | null {
+  const stored = readStored(STORAGE_ACCOUNT_EMAIL)
+  if (stored) return stored
+  const access = readStored(STORAGE_ACCESS)
+  if (access) {
+    const fromJwt = jwtAccountEmail(access)
+    if (fromJwt) return fromJwt
+  }
+  return null
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const [accessToken, setAccessToken] = useState<string | null>(() =>
@@ -40,6 +53,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [refreshToken, setRefreshToken] = useState<string | null>(() =>
     readStored(STORAGE_REFRESH),
   )
+  const [accountEmail, setAccountEmailState] = useState<string | null>(
+    initialAccountEmail,
+  )
 
   const accessTokenRef = useRef(accessToken)
   const refreshTokenRef = useRef(refreshToken)
@@ -47,8 +63,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setAccessToken(null)
     setRefreshToken(null)
+    setAccountEmailState(null)
     writeStored(STORAGE_ACCESS, null)
     writeStored(STORAGE_REFRESH, null)
+    writeStored(STORAGE_ACCOUNT_EMAIL, null)
   }, [])
 
   const refreshSessionRef = useRef<() => Promise<string | null>>(
@@ -100,24 +118,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(id)
   }, [accessToken])
 
-  const login = useCallback(async (email: string, password: string) => {
-    const pair = await loginWithPassword(email, password)
-    setAccessToken(pair.access)
-    setRefreshToken(pair.refresh)
-    writeStored(STORAGE_ACCESS, pair.access)
-    writeStored(STORAGE_REFRESH, pair.refresh)
+  const setAccountEmail = useCallback((email: string) => {
+    const normalized = email.trim().toLowerCase()
+    setAccountEmailState(normalized)
+    writeStored(STORAGE_ACCOUNT_EMAIL, normalized)
   }, [])
+
+  const login = useCallback(
+    async (email: string, password: string) => {
+      const pair = await loginWithPassword(email, password)
+      setAccessToken(pair.access)
+      setRefreshToken(pair.refresh)
+      writeStored(STORAGE_ACCESS, pair.access)
+      writeStored(STORAGE_REFRESH, pair.refresh)
+      setAccountEmail(email)
+    },
+    [setAccountEmail],
+  )
 
   const value = useMemo(
     () => ({
       accessToken,
       refreshToken,
+      accountEmail,
       isAuthenticated: Boolean(accessToken || refreshToken),
       login,
       logout,
       refreshSession,
+      setAccountEmail,
     }),
-    [accessToken, refreshToken, login, logout, refreshSession],
+    [
+      accessToken,
+      refreshToken,
+      accountEmail,
+      login,
+      logout,
+      refreshSession,
+      setAccountEmail,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
