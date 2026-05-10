@@ -6,7 +6,7 @@ import { buildUrl } from './http.ts'
 export type ListResourcesParams = {
   limit: number
   offset: number
-  place: number
+  place: string
 }
 
 export async function listResources(
@@ -26,7 +26,7 @@ export async function listResources(
 }
 
 export type CreateResourceBody = {
-  place: number
+  place: string
   name: string
 }
 
@@ -66,7 +66,7 @@ export type UpdateResourceBody = {
 }
 
 export async function updateResource(
-  id: number,
+  id: string,
   body: UpdateResourceBody,
 ): Promise<Resource> {
   const url = buildUrl(`/booking/resources/${id}/`)

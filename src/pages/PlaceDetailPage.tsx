@@ -40,10 +40,16 @@ function formatDate(iso: string): string {
   }
 }
 
+function isUuid(s: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    s,
+  )
+}
+
 export function PlaceDetailPage() {
   const { placeId: placeIdParam } = useParams<{ placeId: string }>()
   const { accessToken } = useAuth()
-  const placeId = placeIdParam ? parseInt(placeIdParam, 10) : NaN
+  const placeId = placeIdParam && isUuid(placeIdParam) ? placeIdParam : null
 
   const [place, setPlace] = useState<Place | null>(null)
   const [resources, setResources] = useState<Paginated<Resource> | null>(null)
@@ -55,7 +61,7 @@ export function PlaceDetailPage() {
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
 
   const loadAll = useCallback(async () => {
-    if (!Number.isFinite(placeId)) {
+    if (!placeId) {
       setLoading(false)
       setError('Invalid place')
       return
@@ -122,7 +128,7 @@ export function PlaceDetailPage() {
     setEditingResource(null)
   }
 
-  if (!Number.isFinite(placeId)) {
+  if (!placeId) {
     return (
       <Container maxWidth="lg" sx={{ py: 3 }}>
         <Alert severity="error">Invalid place.</Alert>

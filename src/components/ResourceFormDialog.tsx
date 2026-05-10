@@ -15,7 +15,7 @@ import type { Resource } from '../types/booking.ts'
 
 type Props = {
   open: boolean
-  placeId: number
+  placeId: string
   resource: Resource | null
   onClose: () => void
   onSaved: () => void

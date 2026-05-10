@@ -15,6 +15,8 @@ import { registerUser } from '../api/auth.ts'
 
 export function SignupPage() {
   const navigate = useNavigate()
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [password2, setPassword2] = useState('')
@@ -24,6 +26,16 @@ export function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    const fn = firstName.trim()
+    const ln = lastName.trim()
+    if (!fn) {
+      setError('First name is required.')
+      return
+    }
+    if (!ln) {
+      setError('Last name is required.')
+      return
+    }
     if (password.length < 8) {
       setError('Password must be at least 8 characters.')
       return
@@ -34,7 +46,12 @@ export function SignupPage() {
     }
     setLoading(true)
     try {
-      await registerUser({ email, password })
+      await registerUser({
+        first_name: fn,
+        last_name: ln,
+        email,
+        password,
+      })
       navigate('/login?registered=1')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
@@ -64,6 +81,22 @@ export function SignupPage() {
         )}
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={2}>
+            <TextField
+              label="First name"
+              autoComplete="given-name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Last name"
+              autoComplete="family-name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              fullWidth
+            />
             <TextField
               label="Email"
               type="email"

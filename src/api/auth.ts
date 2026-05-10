@@ -42,12 +42,14 @@ export async function refreshAccessToken(refresh: string): Promise<string> {
 }
 
 export type RegisterBody = {
+  first_name: string
+  last_name: string
   email: string
   password: string
 }
 
 export type UserCreated = {
-  id: number
+  id: string
   email: string
 }
 
@@ -57,6 +59,8 @@ export async function registerUser(body: RegisterBody): Promise<UserCreated> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
+      first_name: body.first_name.trim(),
+      last_name: body.last_name.trim(),
       email: body.email.trim().toLowerCase(),
       password: body.password,
     }),

@@ -11,7 +11,7 @@ export type ListPlacesParams = {
   managed_by_me?: boolean
 }
 
-export async function getPlace(id: number): Promise<Place> {
+export async function getPlace(id: string): Promise<Place> {
   const url = buildUrl(`/booking/places/${id}/`)
   const res = await authFetch(url, { headers: { Accept: 'application/json' } })
   if (!res.ok) {
@@ -75,7 +75,7 @@ export async function createPlace(body: CreatePlaceBody): Promise<Place> {
 export type UpdatePlaceBody = CreatePlaceBody
 
 export async function updatePlace(
-  id: number,
+  id: string,
   body: UpdatePlaceBody,
 ): Promise<Place> {
   const url = buildUrl(`/booking/places/${id}/`)

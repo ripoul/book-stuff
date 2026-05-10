@@ -26,7 +26,7 @@ vi.mock('../context/useAuth.ts', () => ({
 describe('AddPlaceDialog', () => {
   it('submits name and public flag', async () => {
     createPlaceMock.mockResolvedValue({
-      id: 9,
+      id: '90000000-0000-4000-a000-000000000009',
       name: 'Room A',
       public: true,
       created_at: '2020-01-01T00:00:00Z',

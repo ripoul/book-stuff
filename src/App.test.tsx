@@ -15,16 +15,20 @@ const listPlacesMock = vi.hoisted(() =>
   }),
 )
 
-const getPlaceMock = vi.hoisted(() =>
-  vi.fn().mockResolvedValue({
-    id: 1,
-    name: 'Sample',
-    public: true,
-    can_manage: true,
-    created_at: '2020-01-01T00:00:00Z',
-    updated_at: '2020-01-01T00:00:00Z',
-  }),
-)
+const { getPlaceMock, SAMPLE_PLACE_ID } = vi.hoisted(() => {
+  const id = '10000000-0000-4000-a000-000000000001'
+  return {
+    SAMPLE_PLACE_ID: id,
+    getPlaceMock: vi.fn().mockResolvedValue({
+      id,
+      name: 'Sample',
+      public: true,
+      can_manage: true,
+      created_at: '2020-01-01T00:00:00Z',
+      updated_at: '2020-01-01T00:00:00Z',
+    }),
+  }
+})
 
 const listResourcesMock = vi.hoisted(() =>
   vi.fn().mockResolvedValue({
@@ -78,7 +82,7 @@ describe('App', () => {
   })
 
   it('place detail route loads place', async () => {
-    renderAt('/places/1')
+    renderAt(`/places/${SAMPLE_PLACE_ID}`)
     expect(
       await screen.findByRole('heading', { name: 'Sample' }),
     ).toBeInTheDocument()

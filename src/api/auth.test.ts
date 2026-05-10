@@ -46,14 +46,25 @@ describe('auth API', () => {
     expect(access).toBe('new')
   })
 
-  it('registerUser posts email and password', async () => {
+  it('registerUser posts names email and password', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
-      jsonResponse({ id: 1, email: 'a@b.c' }),
+      jsonResponse({
+        id: '10000000-0000-4000-a000-000000000001',
+        email: 'a@b.c',
+      }),
     )
-    const user = await registerUser({ email: 'A@B.C', password: 'longenough' })
-    expect(user.id).toBe(1)
+    const user = await registerUser({
+      first_name: '  Jane ',
+      last_name: ' Doe ',
+      email: 'A@B.C',
+      password: 'longenough',
+    })
+    expect(user.id).toBe('10000000-0000-4000-a000-000000000001')
     const [, init] = vi.mocked(fetch).mock.calls[0]
     const body = JSON.parse(String(init?.body))
+    expect(body.first_name).toBe('Jane')
+    expect(body.last_name).toBe('Doe')
     expect(body.email).toBe('a@b.c')
+    expect(body.password).toBe('longenough')
   })
 })

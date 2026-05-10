@@ -1,5 +1,5 @@
 export type Place = {
-  id: number
+  id: string
   name: string
   public: boolean
   can_manage?: boolean
@@ -8,8 +8,8 @@ export type Place = {
 }
 
 export type Resource = {
-  id: number
-  place: number
+  id: string
+  place: string
   name: string
   created_at: string
   updated_at: string

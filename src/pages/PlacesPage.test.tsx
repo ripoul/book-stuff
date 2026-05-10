@@ -14,6 +14,9 @@ vi.mock('../api/places.ts', () => ({
 
 const listPlacesMock = vi.mocked(listPlaces)
 
+const PLACE_ALPHA_ID = '10000000-0000-4000-a000-000000000001'
+const PLACE_BETA_ID = '20000000-0000-4000-a000-000000000002'
+
 describe('PlacesPage', () => {
   beforeEach(() => {
     listPlacesMock.mockResolvedValue({
@@ -22,7 +25,7 @@ describe('PlacesPage', () => {
       previous: null,
       results: [
         {
-          id: 1,
+          id: PLACE_ALPHA_ID,
           name: 'Alpha',
           public: true,
           can_manage: true,
@@ -30,7 +33,7 @@ describe('PlacesPage', () => {
           updated_at: '2020-01-01T00:00:00Z',
         },
         {
-          id: 2,
+          id: PLACE_BETA_ID,
           name: 'Beta',
           public: false,
           can_manage: false,

@@ -22,10 +22,14 @@ vi.mock('../api/resources.ts', () => ({
 const getPlaceMock = vi.mocked(getPlace)
 const listResourcesMock = vi.mocked(listResources)
 
+const PLACE_LAB_ID = '30000000-0000-4000-a000-000000000003'
+const PLACE_READONLY_ID = '50000000-0000-4000-a000-000000000005'
+const RESOURCE_BENCH_ID = 'a1000000-0000-4000-a000-000000000010'
+
 describe('PlaceDetailPage', () => {
   it('shows place name and resources', async () => {
     getPlaceMock.mockResolvedValue({
-      id: 3,
+      id: PLACE_LAB_ID,
       name: 'Lab North',
       public: true,
       can_manage: true,
@@ -38,8 +42,8 @@ describe('PlaceDetailPage', () => {
       previous: null,
       results: [
         {
-          id: 10,
-          place: 3,
+          id: RESOURCE_BENCH_ID,
+          place: PLACE_LAB_ID,
           name: 'Bench 1',
           created_at: '2020-01-01T00:00:00Z',
           updated_at: '2020-01-01T00:00:00Z',
@@ -50,7 +54,7 @@ describe('PlaceDetailPage', () => {
       <Routes>
         <Route path="/places/:placeId" element={<PlaceDetailPage />} />
       </Routes>,
-      { initialEntries: ['/places/3'] },
+      { initialEntries: [`/places/${PLACE_LAB_ID}`] },
     )
     expect(
       await screen.findByRole('heading', { name: 'Lab North' }),
@@ -58,14 +62,14 @@ describe('PlaceDetailPage', () => {
     expect(await screen.findByText('Bench 1')).toBeInTheDocument()
     await waitFor(() =>
       expect(listResourcesMock).toHaveBeenCalledWith(
-        expect.objectContaining({ place: 3 }),
+        expect.objectContaining({ place: PLACE_LAB_ID }),
       ),
     )
   })
 
   it('hides add resource when cannot manage', async () => {
     getPlaceMock.mockResolvedValue({
-      id: 5,
+      id: PLACE_READONLY_ID,
       name: 'Read only',
       public: true,
       can_manage: false,
@@ -82,7 +86,7 @@ describe('PlaceDetailPage', () => {
       <Routes>
         <Route path="/places/:placeId" element={<PlaceDetailPage />} />
       </Routes>,
-      { initialEntries: ['/places/5'] },
+      { initialEntries: [`/places/${PLACE_READONLY_ID}`] },
     )
     await screen.findByRole('heading', { name: 'Read only' })
     expect(

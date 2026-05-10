@@ -14,6 +14,11 @@ function jsonResponse(data: unknown, ok = true, status = 200): Response {
 
 let tokenForTests: string | null = 'tok'
 
+const PID1 = '10000000-0000-4000-a000-000000000001'
+const PID2 = '20000000-0000-4000-a000-000000000002'
+const PID3 = '30000000-0000-4000-a000-000000000003'
+const PID4 = '40000000-0000-4000-a000-000000000004'
+
 describe('places API', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
@@ -39,7 +44,7 @@ describe('places API', () => {
       previous: null,
       results: [
         {
-          id: 1,
+          id: PID1,
           name: 'Lab',
           public: true,
           created_at: '2020-01-01T00:00:00Z',
@@ -66,7 +71,7 @@ describe('places API', () => {
 
   it('getPlace requests detail URL', async () => {
     const place = {
-      id: 4,
+      id: PID4,
       name: 'Solo',
       public: false,
       can_manage: false,
@@ -74,10 +79,10 @@ describe('places API', () => {
       updated_at: '2020-01-01T00:00:00Z',
     }
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(place))
-    const res = await getPlace(4)
+    const res = await getPlace(PID4)
     expect(res.name).toBe('Solo')
     const [url, init] = vi.mocked(fetch).mock.calls[0]
-    expect(String(url)).toContain('booking/places/4/')
+    expect(String(url)).toContain(`booking/places/${PID4}/`)
     expect(new Headers(init?.headers).get('Authorization')).toBe('Bearer tok')
   })
 
@@ -100,7 +105,7 @@ describe('places API', () => {
   it('updatePlace sends PATCH', async () => {
     tokenForTests = 'access-token'
     const updated = {
-      id: 3,
+      id: PID3,
       name: 'Renamed',
       public: true,
       can_manage: true,
@@ -108,10 +113,10 @@ describe('places API', () => {
       updated_at: '2020-01-03T00:00:00Z',
     }
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(updated))
-    const place = await updatePlace(3, { name: 'Renamed', public: true })
+    const place = await updatePlace(PID3, { name: 'Renamed', public: true })
     expect(place.name).toBe('Renamed')
     const [url, init] = vi.mocked(fetch).mock.calls[0]
-    expect(String(url)).toContain('booking/places/3/')
+    expect(String(url)).toContain(`booking/places/${PID3}/`)
     expect(init?.method).toBe('PATCH')
     expect(JSON.parse(String(init?.body))).toEqual({
       name: 'Renamed',
@@ -128,7 +133,7 @@ describe('places API', () => {
   it('createPlace sends JSON body', async () => {
     tokenForTests = 'access-token'
     const created = {
-      id: 2,
+      id: PID2,
       name: 'New',
       public: false,
       created_at: '2020-01-02T00:00:00Z',
@@ -136,7 +141,7 @@ describe('places API', () => {
     }
     vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(created))
     const place = await createPlace({ name: 'New', public: false })
-    expect(place.id).toBe(2)
+    expect(place.id).toBe(PID2)
     const [, init] = vi.mocked(fetch).mock.calls[0]
     expect(init?.method).toBe('POST')
     expect(JSON.parse(String(init?.body))).toEqual({

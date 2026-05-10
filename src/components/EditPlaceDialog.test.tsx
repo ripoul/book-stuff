@@ -24,7 +24,7 @@ vi.mock('../context/useAuth.ts', () => ({
 }))
 
 const samplePlace = {
-  id: 7,
+  id: '70000000-0000-4000-a000-000000000007',
   name: 'Lab',
   public: false,
   can_manage: true,
@@ -55,7 +55,7 @@ describe('EditPlaceDialog', () => {
     fireEvent.click(within(dialog).getByRole('switch'))
     fireEvent.click(within(dialog).getByRole('button', { name: /^save$/i }))
     await waitFor(() => {
-      expect(updatePlaceMock).toHaveBeenCalledWith(7, {
+      expect(updatePlaceMock).toHaveBeenCalledWith(samplePlace.id, {
         name: 'Lab X',
         public: true,
       })
