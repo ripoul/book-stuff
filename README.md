@@ -12,7 +12,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-D22128?style=for-the-badge&logo=apache&logoColor=white)](LICENSE)
 
 [![Frontend](https://img.shields.io/badge/🖥️_frontend-book--stuff-181717?style=for-the-badge&logo=github)](https://github.com/ripoul/book-stuff)
-[![Backend](https://img.shields.io/badge/🔌_backend-dépôts_API-181717?style=for-the-badge&logo=github)](https://github.com/ripoul?tab=repositories)
+[![Backend](https://img.shields.io/badge/🔌_backend-dépôts_API-181717?style=for-the-badge&logo=github)](https://github.com/ripoul/book-stuff-api)
 
 ---
 
@@ -30,12 +30,10 @@ En dev, le proxy Vite envoie souvent `/api` vers un serveur local type **Django*
 
 ## 🔗 Dépôts
 
-| Rôle            | Lien                                                                                                                           |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| 🖥️ **Frontend** | [**github.com/ripoul/book-stuff**](https://github.com/ripoul/book-stuff) _(ce dépôt)_                                          |
-| 🔌 **Backend**  | [**Dépôts @ripoul**](https://github.com/ripoul?tab=repositories) _(trouver l’API / OpenAPI : `/booking/`, `/accounts/`, etc.)_ |
-
-💬 _Si l’API est ailleurs, mets à jour la ligne « Backend » avec l’URL exacte du dépôt._
+| Rôle            | Lien                                                                                                                                           |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🖥️ **Frontend** | [**github.com/ripoul/book-stuff**](https://github.com/ripoul/book-stuff) _(ce dépôt)_                                                          |
+| 🔌 **Backend**  | [**github.com/ripoul/book-stuff-api**](https://github.com/ripoul/book-stuff-api) _(trouver l’API / OpenAPI : `/booking/`, `/accounts/`, etc.)_ |
 
 ---
 
@@ -57,23 +55,6 @@ En dev, le proxy Vite envoie souvent `/api` vers un serveur local type **Django*
 | 📍 Lieu        | Création / édition si `can_manage`                                                                            |
 | 📎 Ressources  | CRUD sur la fiche lieu                                                                                        |
 | ✉️ Invitations | Filtres (place, plusieurs statuts), inviter par email, révoquer, ré-inviter (`revoked` → `pending` via PATCH) |
-
----
-
-## 🗺️ Schéma (vue d’ensemble)
-
-```mermaid
-flowchart TB
-  subgraph spa [SPA_Vite_React]
-    UI[Pages_MUI]
-    API_CLIENT[authFetch_+_OpenAPI_shapes]
-  end
-  subgraph remote [Backend]
-    REST["REST_JWT"]
-  end
-  UI --> API_CLIENT
-  API_CLIENT --> REST
-```
 
 ---
 
@@ -146,4 +127,8 @@ pre-commit run --all-files
 
 ---
 
-☕ _Fait avec des flèches, des tableaux et un peu de café._
+<div align="center">
+
+Made with care by [**ripoul**](https://github.com/ripoul)
+
+</div>
