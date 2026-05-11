@@ -58,7 +58,7 @@ export function LoginPage() {
         </Typography>
         {sessionExpired && (
           <Alert severity="warning" sx={{ mb: 2 }}>
-            Votre session a expiré. Veuillez vous reconnecter.
+            Your session has expired. Please sign in again.
           </Alert>
         )}
         {justRegistered && (

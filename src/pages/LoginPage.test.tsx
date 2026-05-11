@@ -15,7 +15,7 @@ describe('LoginPage', () => {
     renderWithProviders(<LoginPage />, {
       initialEntries: ['/login?session=expired'],
     })
-    expect(screen.getByText(/votre session a expiré/i)).toBeInTheDocument()
+    expect(screen.getByText(/your session has expired/i)).toBeInTheDocument()
   })
 
   it('stores tokens after successful submit', async () => {

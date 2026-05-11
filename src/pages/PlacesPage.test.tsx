@@ -92,8 +92,7 @@ describe('PlacesPage', () => {
 
   it('opens edit dialog when can_manage', async () => {
     renderWithProviders(<PlacesPage />)
-    await waitFor(() => expect(listPlacesMock).toHaveBeenCalled())
-    fireEvent.click(screen.getByRole('button', { name: /edit alpha/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /edit alpha/i }))
     expect(
       await screen.findByRole('dialog', { name: /edit place/i }),
     ).toBeInTheDocument()
@@ -115,12 +114,10 @@ describe('PlacesPage', () => {
       </Routes>,
       { initialEntries: ['/places'] },
     )
-    await waitFor(() => expect(listPlacesMock).toHaveBeenCalled())
-    const row = screen.getByText('Alpha').closest('tr')
+    const cell = await screen.findByText('Alpha')
+    const row = cell.closest('tr')
     expect(row).toBeTruthy()
     fireEvent.click(row as HTMLElement)
-    await waitFor(() =>
-      expect(screen.getByText('place-detail')).toBeInTheDocument(),
-    )
+    expect(await screen.findByText('place-detail')).toBeInTheDocument()
   })
 })
