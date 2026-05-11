@@ -3,13 +3,14 @@ import {
   Box,
   Button,
   Container,
+  Link,
   Paper,
   Stack,
   TextField,
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { getCurrentAccount, updateCurrentAccount } from '../api/account.ts'
 import { ApiError } from '../api/errors.ts'
 import { useAuth } from '../context/useAuth.ts'
@@ -101,8 +102,17 @@ export function AccountPage() {
         >
           Account
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           Update your name and email for this account.
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 3 }}>
+          <Link
+            component={RouterLink}
+            to="/account/invitations"
+            underline="hover"
+          >
+            View invitations
+          </Link>
         </Typography>
         {loadError && (
           <Alert severity="error" sx={{ mb: 2 }}>

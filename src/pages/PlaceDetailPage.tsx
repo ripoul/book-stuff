@@ -1,6 +1,7 @@
 import AddIcon from '@mui/icons-material/Add'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import EditIcon from '@mui/icons-material/Edit'
+import EmailIcon from '@mui/icons-material/Email'
 import {
   Alert,
   Box,
@@ -166,13 +167,32 @@ export function PlaceDetailPage() {
             {place?.name ?? 'Place'}
           </Typography>
           {place ? (
-            <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            <Box
+              sx={{
+                mb: 2,
+                display: 'flex',
+                gap: 1,
+                flexWrap: 'wrap',
+                alignItems: 'center',
+              }}
+            >
               <Chip
                 size="small"
                 label={place.public ? 'Public' : 'Private'}
                 color={place.public ? 'primary' : 'default'}
                 variant={place.public ? 'filled' : 'outlined'}
               />
+              {canManage ? (
+                <Button
+                  component={RouterLink}
+                  to={`/places/${place.id}/invitations`}
+                  size="small"
+                  variant="outlined"
+                  startIcon={<EmailIcon />}
+                >
+                  Invitations
+                </Button>
+              ) : null}
             </Box>
           ) : null}
 

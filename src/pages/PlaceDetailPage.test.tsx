@@ -65,6 +65,10 @@ describe('PlaceDetailPage', () => {
         expect.objectContaining({ place: PLACE_LAB_ID }),
       ),
     )
+    expect(screen.getByRole('link', { name: /invitations/i })).toHaveAttribute(
+      'href',
+      `/places/${PLACE_LAB_ID}/invitations`,
+    )
   })
 
   it('hides add resource when cannot manage', async () => {

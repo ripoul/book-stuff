@@ -21,3 +21,28 @@ export type Paginated<T> = {
   previous: string | null
   results: T[]
 }
+
+export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'revoked'
+
+export type MyInvitation = {
+  id: string
+  place: string
+  place_name: string
+  email: string
+  status: InvitationStatus
+  accepted_by: number | null
+  invited_by: number
+  created_at: string
+  updated_at: string
+}
+
+export type ManagerInvitation = {
+  id: string
+  place: string
+  email: string
+  status: InvitationStatus
+  accepted_by: number | null
+  invited_by: number
+  created_at: string
+  updated_at: string
+}

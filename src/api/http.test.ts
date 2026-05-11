@@ -18,4 +18,16 @@ describe('buildUrl', () => {
     expect(url).toContain('ordering=name')
     expect(url).not.toContain('name=')
   })
+
+  it('repeats query keys for array values', () => {
+    const url = buildUrl('/booking/manage/invitations/', {
+      limit: 10,
+      offset: 0,
+      status: ['pending', 'accepted'],
+    })
+    expect(url).toContain('status=pending')
+    expect(url).toContain('status=accepted')
+    const u = new URL(url)
+    expect(u.searchParams.getAll('status')).toEqual(['pending', 'accepted'])
+  })
 })

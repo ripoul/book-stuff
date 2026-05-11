@@ -12,15 +12,23 @@ function apiRoot(): string {
   return `${window.location.origin}${path}`.replace(/\/$/, '')
 }
 
+export type BuildUrlQueryValue = string | number | string[] | undefined
+
 export function buildUrl(
   path: string,
-  query?: Record<string, string | number | undefined>,
+  query?: Record<string, BuildUrlQueryValue>,
 ): string {
   const p = path.startsWith('/') ? path : `/${path}`
   const u = new URL(`${apiRoot()}${p}`)
   if (query) {
     for (const [k, v] of Object.entries(query)) {
-      if (v !== undefined && v !== '') u.searchParams.set(k, String(v))
+      if (v === undefined) continue
+      if (Array.isArray(v)) {
+        const parts = v.filter((s) => s !== '')
+        for (const item of parts) u.searchParams.append(k, item)
+        continue
+      }
+      if (v !== '') u.searchParams.set(k, String(v))
     }
   }
   return u.toString()
